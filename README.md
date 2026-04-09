@@ -20,6 +20,20 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Database
+
+PostgreSQL via `.env`. Single entry: **`lib/db.js`** (pool + CRUD).
+
+| Command | Description |
+|--------|-------------|
+| `npm run db:schema` | Test connection, print schema |
+| `npm run db:tables` | Create tables (idempotent) |
+| `npm run db:seed` | Seed from CSV (append) |
+| `npm run db:seed:replace` | Truncate then seed |
+
+- **lib/db.js** — pool, `TABLES` config, `getAll(table, filters)`, `getById`, `create`, `update`, `remove`. Add new tables in `TABLES`.
+- **scripts/** — `schema.js`, `tables.js`, `seed.js`. Seed config lives in `seed.js`; add DDL in `tables.js` for new tables.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

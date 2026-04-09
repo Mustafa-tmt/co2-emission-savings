@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["@react-pdf/renderer", "qrcode"],
+  async rewrites() {
+    return [{ source: "/favicon.ico", destination: "/favicon.png" }];
+  },
 };
 
 export default nextConfig;

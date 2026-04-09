@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
+/*
+ * Shell + surfaces. Tune --brand / --sidebar to match `images/Brand Guideliness rev05 2023.pdf`.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --sidebar: #0a0f1a;
+  --sidebar-width: 17rem;
+  --shell-bg: #e8eef5;
+  --background: #e8eef5;
+  --foreground: #0c1222;
+  --surface: #ffffff;
+  --surface-muted: #f4f7fb;
+  --border: rgba(12, 18, 34, 0.08);
+  --muted: #5c6b82;
+  --brand: #0d9488;
+  --brand-hover: #0f766e;
+  --brand-dark: #0f3d3a;
+  --brand-subtle: rgba(13, 148, 136, 0.1);
+  --brand-glow: rgba(13, 148, 136, 0.25);
+  --chart-grid: #e2e8f0;
+  --muted-hex: #64748b;
 }
 
 @theme inline {
@@ -12,15 +29,41 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background: var(--shell-bg);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* App shell: explicit rules so the fixed sidebar stays opaque and main content is offset (Tailwind arbitrary var() can miss in some builds). */
+.app-shell-root {
+  min-height: 100vh;
+  background-color: var(--shell-bg);
+}
+
+.app-shell-sidebar {
+  width: var(--sidebar-width);
+  box-sizing: border-box;
+  background-color: var(--sidebar);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+}
+
+.app-shell-content {
+  padding-left: var(--sidebar-width);
+  box-sizing: border-box;
+}
+
+.app-shell-main {
+  min-height: 100vh;
+  background-color: var(--shell-bg);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+dialog::backdrop {
+  background-color: rgba(15, 23, 42, 0.45);
 }

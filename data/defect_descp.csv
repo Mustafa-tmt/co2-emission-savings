@@ -1,0 +1,13 @@
+DefectType,Description
+AE,"Accessory Exchange (s-pen, sim tray, usb cable)"
+FL,Alt Res (Return Handling)
+IP,Inspection (IS/IP) (no parts)
+SU,Software Update (no parts)
+L1,Level 1 (Screen protector/repair ring/buds)
+L2,Level 2 (internal parts replacement)
+UB,MCR /Oled Replacement
+U1,MCR Foldables /Hinge Replacement
+U2,MCR Foldables /Con2Con Replacement
+SP,Laptops Simple Repair (software upgrade)
+MN,"Laptops Minor Repair (battery, fingerprint)"
+MJ,"Laptops Major Repair (mainboard /lcd/keyboard)"

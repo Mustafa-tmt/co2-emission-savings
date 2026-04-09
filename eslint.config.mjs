@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Node CLI scripts and shared pg layer use require()
+    "scripts/**",
+    "lib/db.js",
   ]),
 ]);
 
