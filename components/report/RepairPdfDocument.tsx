@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/alt-text -- @react-pdf/rendered Image is PDF output, not DOM */
-import path from "path";
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { JobReportPayload } from "@/lib/dashboardTypes";
 import { modelAssumptionLinesForPdf } from "@/lib/modelAssumptions";
@@ -28,7 +27,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   heroTextBlock: { flex: 1, paddingRight: 16 },
-  heroLogo: { width: 128 },
+  heroLogo: { width: 300, height: 72, objectFit: "contain" as const },
   heroKicker: { fontSize: 8, color: "#99f6e4", marginBottom: 4, letterSpacing: 0.5 },
   heroTitle: { fontSize: 18, fontFamily: "Helvetica-Bold", color: "#ffffff", marginBottom: 4 },
   heroJob: { fontSize: 11, color: "#ccfbf1", fontFamily: "Helvetica-Bold" },
@@ -126,18 +125,15 @@ function formatKg(n: number | null | undefined, decimals = 3) {
   return `${Number(n).toFixed(decimals)} kg CO2e`;
 }
 
-/** Strapline for dark / saturated backgrounds (matches web `--brand-hover` band). */
-function logoSrcOnDark() {
-  return path.join(process.cwd(), "public", "brand", "tmt_logo_strapline_margin_on_black.png");
-}
-
 type Props = {
   report: JobReportPayload;
   reportUrl: string;
   qrDataUrl: string;
+  /** Base64 data URL (PNG) — same strapline as web `TmtLogo` onDark. */
+  logoDataUrl: string;
 };
 
-export function RepairPdfDocument({ report, reportUrl, qrDataUrl }: Props) {
+export function RepairPdfDocument({ report, reportUrl, qrDataUrl, logoDataUrl }: Props) {
   const skippedOrFailed =
     report.evaluationStatus === "skipped" || report.evaluationStatus === "failed";
 
@@ -151,7 +147,7 @@ export function RepairPdfDocument({ report, reportUrl, qrDataUrl }: Props) {
               <Text style={styles.heroTitle}>Repair impact report</Text>
               <Text style={styles.heroJob}>Job {report.jobId}</Text>
             </View>
-            <Image src={logoSrcOnDark()} style={styles.heroLogo} />
+            <Image src={logoDataUrl} style={styles.heroLogo} />
           </View>
         </View>
 
@@ -336,7 +332,7 @@ export function RepairPdfDocument({ report, reportUrl, qrDataUrl }: Props) {
                 <Text style={styles.heroTitle}>Mapped components</Text>
                 <Text style={styles.heroJob}>Job {report.jobId}</Text>
               </View>
-              <Image src={logoSrcOnDark()} style={styles.heroLogo} />
+              <Image src={logoDataUrl} style={styles.heroLogo} />
             </View>
           </View>
           <View style={styles.body}>

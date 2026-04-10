@@ -3,6 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import QRCode from "qrcode";
 import { RepairPdfDocument } from "@/components/report/RepairPdfDocument";
 import { getJobReportCached } from "@/lib/dashboardCache";
+import { getRepairPdfHeroLogoDataUrl } from "@/lib/pdfBrandAssets";
 import { getRequestBaseUrl } from "@/lib/requestBaseUrl";
 import type { JobReportPayload } from "@/lib/dashboardTypes";
 
@@ -33,8 +34,15 @@ export async function GET(
     color: { dark: "#0f172a", light: "#ffffff" },
   });
 
+  const logoDataUrl = getRepairPdfHeroLogoDataUrl();
+
   const buffer = await renderToBuffer(
-    <RepairPdfDocument report={report} reportUrl={reportUrl} qrDataUrl={qrDataUrl} />
+    <RepairPdfDocument
+      report={report}
+      reportUrl={reportUrl}
+      qrDataUrl={qrDataUrl}
+      logoDataUrl={logoDataUrl}
+    />
   );
 
   return new NextResponse(buffer as unknown as BodyInit, {

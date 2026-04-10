@@ -112,8 +112,12 @@ export function TopModelsChart({ topModels }: { topModels: TopModelRow[] }) {
           avoided CO₂e in kilograms. Hover a bar for the full device name and job count.
         </p>
       </div>
-      <div className="w-full px-2 pb-4 pt-3 sm:px-4" style={{ height: chartHeight }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="min-h-0 w-full min-w-0 px-2 pb-4 pt-3 sm:px-4" style={{ height: chartHeight }}>
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          initialDimension={{ width: 800, height: chartHeight }}
+        >
           <BarChart
             data={data}
             layout="vertical"

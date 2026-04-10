@@ -28,7 +28,7 @@ function ChartShell({
         <h2 className="text-base font-semibold tracking-tight text-[var(--foreground)] sm:text-lg">{title}</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">{subtitle}</p>
       </div>
-      <div className="min-h-0 flex-1 px-2 pb-4 pt-3 sm:px-4">{children}</div>
+      <div className="min-h-0 min-w-0 flex-1 px-2 pb-4 pt-3 sm:px-4">{children}</div>
     </div>
   );
 }
@@ -143,7 +143,7 @@ export function DashboardInsightCharts({ charts }: { charts: DashboardCharts }) 
   const defectHeight = Math.max(260, 48 + defects.length * 52);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-stretch">
       <ChartShell
         title="How jobs land in the pipeline"
         subtitle="One bar per outcome: repaired jobs with a savings estimate, failures, or excluded rows. Counts only — total avoided CO₂e is in the stat cards and device chart."
@@ -151,8 +151,12 @@ export function DashboardInsightCharts({ charts }: { charts: DashboardCharts }) 
         {pipeline.length === 0 ? (
           <EmptyChart message="No repair jobs loaded yet." />
         ) : (
-          <div className="w-full" style={{ height: pipelineHeight }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="min-h-0 w-full min-w-0" style={{ height: pipelineHeight }}>
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              initialDimension={{ width: 800, height: pipelineHeight }}
+            >
               <BarChart
                 data={pipeline}
                 layout="vertical"
@@ -207,8 +211,12 @@ export function DashboardInsightCharts({ charts }: { charts: DashboardCharts }) 
         {defects.length === 0 ? (
           <EmptyChart message="No attributed savings yet. Once repaired jobs evaluate with an estimate, categories appear here." />
         ) : (
-          <div className="w-full" style={{ height: defectHeight }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="min-h-0 w-full min-w-0" style={{ height: defectHeight }}>
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              initialDimension={{ width: 800, height: defectHeight }}
+            >
               <BarChart
                 data={defects}
                 layout="vertical"
