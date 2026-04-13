@@ -3,7 +3,9 @@
 # Azure portal (you configure, not this file):
 #   - Application settings: DB_*, NEXT_PUBLIC_APP_URL, WEBSITE_NODE_DEFAULT_VERSION ~22 (or match CI Node)
 #   - PostgreSQL firewall: Web App outbound IPs or "Azure services"
-#   - Optional GitHub repo Variables: AZURE_RESOURCE_GROUP, AZURE_WEBAPP_NAME (exact App Service name)
+#   - Optional GitHub repo Variables: AZURE_RESOURCE_GROUP, AZURE_WEBAPP_NAME
+#     AZURE_WEBAPP_NAME must match App Service → Overview → Name (often like myapp-a1b2c3d4e5,
+#     not the short name you typed at create). If deploy returns 403 Site Disabled, confirm this.
 #
 # https://nextjs.org/docs/app/building-your-application/deploying#nodejs-server
 
@@ -64,7 +66,7 @@ jobs:
       id-token: write
       contents: read
     env:
-      # One place for the name used by az + webapps-deploy (override via repo Variable)
+      # Must match App Service → Overview → Name (same as *.azurewebsites.net prefix before the region suffix)
       APP_SERVICE_NAME: ${{ vars.AZURE_WEBAPP_NAME || 'sustainability' }}
 
     steps:
@@ -80,8 +82,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A47D3F4C247B447C924B317CD6D75031 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CD638EA33A474EFEAA31C9D927015A18 }}
 
-      # OneDeploy returns 403 "Site Disabled" if the Web App (or SCM) is stopped.
-      - name: Ensure Web App is started
+      # OneDeploy 403 "Site Disabled": stopped app, SCM not ready, run-from-package, or wrong app/slot name.
+      - name: Prepare Web App for deployment
+        id: azure-prep
         env:
           AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
         run: |
@@ -94,20 +97,32 @@ jobs:
           fi
           if [ -z "$RG" ] || [ "$RG" = "null" ]; then
             echo "::error::Could not find resource group for Web App '${WEBAPP}'."
-            echo "Set GitHub repo Variable AZURE_RESOURCE_GROUP (e.g. sustainability-group) or AZURE_WEBAPP_NAME to the exact name under App Service → Overview."
+            echo "Set GitHub Variable AZURE_RESOURCE_GROUP or AZURE_WEBAPP_NAME (exact name from App Service → Overview)."
             exit 1
           fi
-          echo "Starting ${WEBAPP} in ${RG}..."
+          echo "rg=${RG}" >> "${GITHUB_OUTPUT}"
+          echo "Using Web App: ${WEBAPP} | Resource group: ${RG}"
+          STATE=$(az webapp show --name "$WEBAPP" --resource-group "$RG" --query state -o tsv)
+          echo "Current state: ${STATE}"
           az webapp start --name "$WEBAPP" --resource-group "$RG"
-          echo "Waiting for SCM to accept deployment..."
-          sleep 15
+          # Prebuilt zip: disable remote Oryx build; avoids SCM fighting OneDeploy
+          az webapp config appsettings set --name "$WEBAPP" --resource-group "$RG" \
+            --settings SCM_DO_BUILD_DURING_DEPLOYMENT=false
+          # Run-from-package URL mode can block normal zip deploy — clear if set
+          az webapp config appsettings delete --name "$WEBAPP" --resource-group "$RG" \
+            --setting-names WEBSITE_RUN_FROM_PACKAGE 2>/dev/null || true
+          az webapp restart --name "$WEBAPP" --resource-group "$RG"
+          echo "Waiting for SCM / Kudu..."
+          sleep 30
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.APP_SERVICE_NAME }}
-          slot-name: "Production"
+          resource-group-name: ${{ steps.azure-prep.outputs.rg }}
+          slot-name: production
           package: .
-          # Azure sets HOSTNAME; Next standalone binds incorrectly unless overridden
+          clean: true
+          restart: true
           startup-command: "HOSTNAME=0.0.0.0 node server.js"
