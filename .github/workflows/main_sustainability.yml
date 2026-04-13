@@ -1,4 +1,10 @@
-# Next.js standalone bundle → Azure Linux Web App
+# Next.js standalone → Azure Linux Web App (see next.config.ts output: "standalone")
+#
+# Azure portal (you configure, not this file):
+#   - Application settings: DB_*, NEXT_PUBLIC_APP_URL, WEBSITE_NODE_DEFAULT_VERSION ~22 (or match CI Node)
+#   - PostgreSQL firewall: Web App outbound IPs or "Azure services"
+#   - Optional GitHub repo Variables: AZURE_RESOURCE_GROUP, AZURE_WEBAPP_NAME (exact App Service name)
+#
 # https://nextjs.org/docs/app/building-your-application/deploying#nodejs-server
 
 name: Build and deploy Node.js app to Azure Web App - sustainability
@@ -8,6 +14,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+
+# Avoid overlapping deploys (two pushes → one clean deployment)
+concurrency:
+  group: azure-webapp-sustainability
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -29,7 +40,7 @@ jobs:
           npm ci
           npm run build
 
-      # Standalone output does not include client static chunks unless copied
+      # Standalone output omits client chunks unless copied here
       - name: Assemble standalone deployment bundle
         run: |
           mkdir -p .next/standalone/.next/static
@@ -37,6 +48,7 @@ jobs:
             cp -r .next/static/. .next/standalone/.next/static/
           fi
           rm -f .next/standalone/.env .next/standalone/.env.*
+          test -f .next/standalone/server.js || { echo "::error::Missing .next/standalone/server.js — is output: 'standalone' set in next.config?"; exit 1; }
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -51,6 +63,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      # One place for the name used by az + webapps-deploy (override via repo Variable)
+      APP_SERVICE_NAME: ${{ vars.AZURE_WEBAPP_NAME || 'sustainability' }}
 
     steps:
       - name: Download artifact from build job
@@ -66,15 +81,12 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CD638EA33A474EFEAA31C9D927015A18 }}
 
       # OneDeploy returns 403 "Site Disabled" if the Web App (or SCM) is stopped.
-      # Azure CLI requires --resource-group for webapp show; we resolve RG via list or Variables.
-      # Optional repo Variables: AZURE_RESOURCE_GROUP, AZURE_WEBAPP_NAME (exact name from portal)
       - name: Ensure Web App is started
         env:
           AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
-          AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
         run: |
           set -e
-          WEBAPP="${AZURE_WEBAPP_NAME:-sustainability}"
+          WEBAPP="${APP_SERVICE_NAME}"
           if [ -n "${AZURE_RESOURCE_GROUP}" ]; then
             RG="$AZURE_RESOURCE_GROUP"
           else
@@ -94,8 +106,8 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.AZURE_WEBAPP_NAME || 'sustainability' }}
+          app-name: ${{ env.APP_SERVICE_NAME }}
           slot-name: "Production"
           package: .
-          # Azure sets HOSTNAME to the container id; Next binds to it unless we override.
+          # Azure sets HOSTNAME; Next standalone binds incorrectly unless overridden
           startup-command: "HOSTNAME=0.0.0.0 node server.js"
