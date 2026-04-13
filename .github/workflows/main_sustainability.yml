@@ -1,5 +1,5 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
+# Next.js standalone bundle → Azure Linux Web App
+# https://nextjs.org/docs/app/building-your-application/deploying#nodejs-server
 
 name: Build and deploy Node.js app to Azure Web App - sustainability
 
@@ -13,41 +13,51 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: "20"
+          cache: npm
 
-      - name: npm install, build, and test
+      - name: Install and build
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
+          npm ci
+          npm run build
+
+      # Standalone output does not include client static chunks unless copied
+      - name: Assemble standalone deployment bundle
+        run: |
+          mkdir -p .next/standalone/.next/static
+          if [ -d .next/static ] && [ "$(ls -A .next/static 2>/dev/null)" ]; then
+            cp -r .next/static/. .next/standalone/.next/static/
+          fi
+          rm -f .next/standalone/.env .next/standalone/.env.*
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: .next/standalone
+          if-no-files-found: error
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -55,11 +65,12 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A47D3F4C247B447C924B317CD6D75031 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CD638EA33A474EFEAA31C9D927015A18 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'sustainability'
-          slot-name: 'Production'
+          app-name: "sustainability"
+          slot-name: "Production"
           package: .
-          
+          # Azure sets HOSTNAME to the container id; Next binds to it unless we override.
+          startup-command: "HOSTNAME=0.0.0.0 node server.js"
