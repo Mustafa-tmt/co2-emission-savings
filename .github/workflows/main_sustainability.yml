@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
 
       - name: Install and build
@@ -64,6 +64,16 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D2EBB9F3E6ED427AAAFF8EB60FD6F18D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A47D3F4C247B447C924B317CD6D75031 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CD638EA33A474EFEAA31C9D927015A18 }}
+
+      # OneDeploy returns 403 "Site Disabled" if the Web App (or SCM) is stopped.
+      - name: Ensure Web App is started
+        run: |
+          set -e
+          RG=$(az webapp show --name sustainability --query resourceGroup -o tsv)
+          echo "Resource group: $RG"
+          az webapp start --name sustainability --resource-group "$RG"
+          echo "Waiting for SCM to accept deployment..."
+          sleep 15
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
