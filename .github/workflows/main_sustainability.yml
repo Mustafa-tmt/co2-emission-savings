@@ -66,12 +66,27 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_CD638EA33A474EFEAA31C9D927015A18 }}
 
       # OneDeploy returns 403 "Site Disabled" if the Web App (or SCM) is stopped.
+      # Azure CLI requires --resource-group for webapp show; we resolve RG via list or Variables.
+      # Optional repo Variables: AZURE_RESOURCE_GROUP, AZURE_WEBAPP_NAME (exact name from portal)
       - name: Ensure Web App is started
+        env:
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
         run: |
           set -e
-          RG=$(az webapp show --name sustainability --query resourceGroup -o tsv)
-          echo "Resource group: $RG"
-          az webapp start --name sustainability --resource-group "$RG"
+          WEBAPP="${AZURE_WEBAPP_NAME:-sustainability}"
+          if [ -n "${AZURE_RESOURCE_GROUP}" ]; then
+            RG="$AZURE_RESOURCE_GROUP"
+          else
+            RG=$(az webapp list --query "[?name=='${WEBAPP}'].resourceGroup | [0]" -o tsv)
+          fi
+          if [ -z "$RG" ] || [ "$RG" = "null" ]; then
+            echo "::error::Could not find resource group for Web App '${WEBAPP}'."
+            echo "Set GitHub repo Variable AZURE_RESOURCE_GROUP (e.g. sustainability-group) or AZURE_WEBAPP_NAME to the exact name under App Service → Overview."
+            exit 1
+          fi
+          echo "Starting ${WEBAPP} in ${RG}..."
+          az webapp start --name "$WEBAPP" --resource-group "$RG"
           echo "Waiting for SCM to accept deployment..."
           sleep 15
 
@@ -79,7 +94,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "sustainability"
+          app-name: ${{ vars.AZURE_WEBAPP_NAME || 'sustainability' }}
           slot-name: "Production"
           package: .
           # Azure sets HOSTNAME to the container id; Next binds to it unless we override.
