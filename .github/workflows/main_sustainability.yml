@@ -7,6 +7,9 @@
 #     AZURE_WEBAPP_NAME must match App Service → Overview → Name (often like myapp-a1b2c3d4e5,
 #     not the short name you typed at create). If deploy returns 403 Site Disabled, confirm this.
 #
+# Artifact: upload-artifact v4+ skips hidden files unless include-hidden-files: true
+# (standalone needs .next/ with BUILD_ID; without it Azure only gets server.js and crashes).
+#
 # https://nextjs.org/docs/app/building-your-application/deploying#nodejs-server
 
 name: Build and deploy Node.js app to Azure Web App - sustainability
@@ -51,6 +54,8 @@ jobs:
           fi
           rm -f .next/standalone/.env .next/standalone/.env.*
           test -f .next/standalone/server.js || { echo "::error::Missing .next/standalone/server.js — is output: 'standalone' set in next.config?"; exit 1; }
+          # upload-artifact v4+ excludes hidden paths by default — standalone needs .next/ (with BUILD_ID)
+          test -f .next/standalone/.next/BUILD_ID || { echo "::error::Missing .next/standalone/.next/BUILD_ID after build"; exit 1; }
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -58,6 +63,8 @@ jobs:
           name: node-app
           path: .next/standalone
           if-no-files-found: error
+          # Required: standalone bundle includes hidden dir .next/ — without this, Azure gets server.js but no build
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
@@ -74,6 +81,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+
+      - name: Verify deployment bundle
+        run: |
+          test -f server.js || { echo "::error::Artifact missing server.js"; exit 1; }
+          test -f .next/BUILD_ID || { echo "::error::Artifact missing .next/BUILD_ID (upload must use include-hidden-files: true)"; exit 1; }
 
       - name: Login to Azure
         uses: azure/login@v2
