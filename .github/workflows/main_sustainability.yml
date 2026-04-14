@@ -15,6 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Log and verify brand assets (repo checkout)
+        run: |
+          echo "::group::public/brand after checkout"
+          ls -la public/brand/ || { echo "::error::public/brand missing"; exit 1; }
+          echo "::endgroup::"
+          test -f public/brand/tmt_logo_strapline_margin_on_white.png \
+            || { echo "::error::Missing public/brand/tmt_logo_strapline_margin_on_white.png — not in repo or wrong path/case"; exit 1; }
+          test -f public/brand/tmt_logo_strapline_margin_on_black.png \
+            || { echo "::error::Missing public/brand/tmt_logo_strapline_margin_on_black.png"; exit 1; }
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -30,6 +40,19 @@ jobs:
         run: |
           mkdir -p .next/standalone/.next/static
           cp -r .next/static/. .next/standalone/.next/static/
+
+      - name: Log and verify brand assets (standalone bundle)
+        run: |
+          echo "::group::.next/standalone (top level)"
+          ls -la .next/standalone/
+          echo "::endgroup::"
+          echo "::group::.next/standalone/public/brand"
+          ls -la .next/standalone/public/brand/ || { echo "::error::standalone bundle has no public/brand — check Next standalone output"; exit 1; }
+          echo "::endgroup::"
+          test -f .next/standalone/public/brand/tmt_logo_strapline_margin_on_white.png \
+            || { echo "::error::White logo not in deploy bundle (.next/standalone/public/brand/)"; exit 1; }
+          test -f .next/standalone/public/brand/tmt_logo_strapline_margin_on_black.png \
+            || { echo "::error::Black logo not in deploy bundle"; exit 1; }
 
       - name: Azure Login
         uses: azure/login@v2
