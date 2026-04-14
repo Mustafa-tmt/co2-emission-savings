@@ -40,6 +40,9 @@ jobs:
         run: |
           mkdir -p .next/standalone/.next/static
           cp -r .next/static/. .next/standalone/.next/static/
+          # Next standalone can omit some public/ files (trace-only copy). Sync full public so Azure gets every asset.
+          mkdir -p .next/standalone/public
+          cp -r public/. .next/standalone/public/
 
       - name: Log and verify brand assets (standalone bundle)
         run: |
