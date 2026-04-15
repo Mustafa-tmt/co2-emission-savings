@@ -1,4 +1,3 @@
-import { AttentionNeededStatCard } from "@/components/dashboard/AttentionModelsDialog";
 import type { DashboardPayload } from "@/lib/dashboardTypes";
 
 function formatKg(n: number) {
@@ -6,13 +5,7 @@ function formatKg(n: number) {
   return `${n.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 0 })} kg`;
 }
 
-export function StatCards({
-  totals,
-  attentionModels,
-}: {
-  totals: DashboardPayload["totals"];
-  attentionModels: DashboardPayload["attentionModels"];
-}) {
+export function StatCards({ totals }: { totals: DashboardPayload["totals"] }) {
   const cards = [
     {
       label: "Jobs in database",
@@ -31,6 +24,12 @@ export function StatCards({
       value: totals.okCount.toLocaleString(),
       hint: "All parts resolved to LCA lines",
       accent: "from-teal-500/12 to-transparent",
+    },
+    {
+      label: "Attention needed",
+      value: (totals.partialCount + totals.failedCount).toLocaleString(),
+      hint: `${totals.partialCount} partial · ${totals.failedCount} failed`,
+      accent: "from-amber-500/12 to-transparent",
     },
   ];
 
@@ -56,11 +55,6 @@ export function StatCards({
           </div>
         </div>
       ))}
-      <AttentionNeededStatCard
-        value={(totals.partialCount + totals.failedCount).toLocaleString()}
-        hint={`${totals.partialCount} partial · ${totals.failedCount} failed`}
-        rows={attentionModels}
-      />
     </div>
   );
 }

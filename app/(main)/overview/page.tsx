@@ -48,7 +48,7 @@ export default async function OverviewPage() {
         </div>
       </header>
 
-      <StatCards totals={data.totals} attentionModels={data.attentionModels} />
+      <StatCards totals={data.totals} />
       <EquivalentsStrip equivalents={data.equivalents} />
 
       <section className="space-y-6" aria-label="Charts">
