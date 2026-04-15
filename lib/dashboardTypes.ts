@@ -50,6 +50,12 @@ export type DashboardCharts = {
   defectSavings: DefectSavingRow[];
 };
 
+/** One row per distinct model name; how many distinct model numbers (SKUs) appear for that name. */
+export type AttentionModelRow = {
+  modelName: string;
+  modelNumberCount: number;
+};
+
 export type DashboardPayload = {
   summaries: JobSummary[];
   pagination: {
@@ -70,6 +76,7 @@ export type DashboardPayload = {
   };
   equivalents: Co2Equivalents;
   topModels: TopModelRow[];
+  attentionModels: AttentionModelRow[];
   charts: DashboardCharts;
   search: string;
 };
