@@ -42,13 +42,13 @@ export function AttentionNeededStatCard({ value, hint, rows }: Props) {
       <button
         type="button"
         onClick={openModal}
-        className="group relative w-full overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-left shadow-[0_1px_0_rgba(255,255,255,0.8)_inset,0_8px_32px_-8px_rgba(12,18,34,0.12)] transition-colors hover:border-amber-500/35 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--shell-bg)]"
+        className="group relative w-full cursor-pointer overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 text-left shadow-[0_1px_0_rgba(255,255,255,0.8)_inset,0_8px_32px_-8px_rgba(12,18,34,0.12)] transition-colors hover:border-amber-500/35 focus-visible:outline focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--shell-bg)]"
       >
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-br from-amber-500/12 to-transparent opacity-80"
           aria-hidden
         />
-        <div className="relative">
+        <div className="relative cursor-pointer">
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
             Attention needed
           </p>
