@@ -1,5 +1,5 @@
 import { AttentionNeededStatCard } from "@/components/dashboard/AttentionModelsDialog";
-import type { DashboardPayload } from "@/lib/dashboardTypes";
+import type { AttentionModelRow, DashboardPayload } from "@/lib/dashboardTypes";
 
 function formatKg(n: number) {
   if (!Number.isFinite(n)) return "—";
@@ -11,7 +11,7 @@ export function StatCards({
   attentionModels,
 }: {
   totals: DashboardPayload["totals"];
-  attentionModels: DashboardPayload["attentionModels"];
+  attentionModels: AttentionModelRow[];
 }) {
   const cards = [
     {
