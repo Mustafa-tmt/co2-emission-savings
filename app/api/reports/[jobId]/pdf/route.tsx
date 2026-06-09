@@ -6,12 +6,13 @@ import { getJobReportCached } from "@/lib/dashboardCache";
 import { getRepairPdfHeroLogoDataUrl } from "@/lib/pdfBrandAssets";
 import { getRequestBaseUrl } from "@/lib/requestBaseUrl";
 import type { JobReportPayload } from "@/lib/dashboardTypes";
+import { normalizeReplacementScenario } from "@/lib/modelAssumptions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   context: { params: Promise<{ jobId: string }> }
 ) {
   const { jobId: raw } = await context.params;
@@ -20,14 +21,17 @@ export async function GET(
     return NextResponse.json({ error: "Missing job id" }, { status: 400 });
   }
 
-  const payload = await getJobReportCached(jobId);
+  const url = new URL(req.url);
+  const scenario = normalizeReplacementScenario(url.searchParams.get("scenario"));
+
+  const payload = await getJobReportCached(jobId, scenario);
   if (!payload) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
   const report = payload as JobReportPayload;
 
   const baseUrl = await getRequestBaseUrl();
-  const reportUrl = `${baseUrl}/report/${encodeURIComponent(report.jobId)}`;
+  const reportUrl = `${baseUrl}/report/${encodeURIComponent(report.jobId)}?scenario=${encodeURIComponent(scenario)}`;
   const qrDataUrl = await QRCode.toDataURL(reportUrl, {
     width: 120,
     margin: 1,

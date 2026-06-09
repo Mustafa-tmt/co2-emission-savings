@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s · CO2 Sustainability Model",
   },
   description:
-    "Estimated avoided CO₂e from device repairs versus replacement, using your LCA device and component data.",
+    "Estimated manufacturing CO₂e avoided from repairs versus new-device displacement (probability-weighted), using your LCA device and component data.",
   applicationName: "CO2 Sustainability Model",
   // Favicons: `app/icon.png` + `app/apple-icon.png` (Next injects `<link>` tags). `public/favicon.png` matches for direct `/favicon.png` requests; `next.config` rewrites `/favicon.ico` → `/favicon.png`.
 };

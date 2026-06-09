@@ -236,19 +236,32 @@ export function RepairPdfDocument({ report, reportUrl, qrDataUrl, logoDataUrl }:
             {report.analysis ? (
               <>
                 <Text style={styles.sectionTitle}>CO₂e summary</Text>
+                <Text style={[styles.muted, { marginBottom: 6 }]}>
+                  Scenario {report.analysis.replacementScenario} · P ={" "}
+                  {report.analysis.replacementProbabilityP.toFixed(2)} · methodology{" "}
+                  {report.analysis.methodologyVersion}
+                </Text>
                 <View style={styles.box}>
                   <View style={styles.row}>
-                    <Text style={styles.label}>Full lifecycle (ref.)</Text>
-                    <Text style={styles.value}>{formatKg(report.analysis.lifecycleBaseline)}</Text>
+                    <Text style={styles.label}>Manufacturing phase baseline</Text>
+                    <Text style={styles.value}>{formatKg(report.analysis.manufacturingBaseline)}</Text>
                   </View>
                   <View style={styles.row}>
                     <Text style={styles.label}>Parts (this repair)</Text>
                     <Text style={styles.value}>{formatKg(report.analysis.partsCo2)}</Text>
                   </View>
                   <View style={styles.row}>
-                    <Text style={styles.label}>Avoided vs full lifecycle</Text>
+                    <Text style={styles.label}>Operational allowance (job)</Text>
+                    <Text style={styles.value}>{formatKg(report.analysis.repairOperationalKg)}</Text>
+                  </View>
+                  <View style={styles.row}>
+                    <Text style={styles.label}>Repair burden (parts + ops)</Text>
+                    <Text style={styles.value}>{formatKg(report.analysis.repairBurden)}</Text>
+                  </View>
+                  <View style={styles.row}>
+                    <Text style={styles.label}>Manufacturing CO₂e avoided (est.)</Text>
                     <Text style={[styles.value, { fontFamily: "Helvetica-Bold" }]}>
-                      {formatKg(report.analysis.approxAvoidedLifecycle)}
+                      {formatKg(report.analysis.avoidedKg)}
                     </Text>
                   </View>
                 </View>

@@ -6,8 +6,8 @@ export function EquivalentsStrip({ equivalents }: { equivalents: Co2Equivalents 
   if (!equivalents) {
     return (
       <section className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/80 px-6 py-10 text-center text-sm text-[var(--muted)]">
-        No positive lifecycle savings total yet — impact stories appear once there is measurable avoided
-        CO₂e across your repair set.
+        No positive manufacturing CO₂e avoided total yet — impact stories appear once there is measurable
+        avoided manufacturing CO₂e across your repair set.
       </section>
     );
   }

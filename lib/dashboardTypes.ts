@@ -1,5 +1,7 @@
 /** Serializable shapes produced by `lib/dashboardData.js` for UI layers. */
 
+export type ReplacementScenario = "conservative" | "central" | "optimistic";
+
 export type RepairEvaluationStatus = "ok" | "partial" | "failed" | "skipped";
 
 export type Co2ImpactIcon = "tree" | "lifestyle" | "tech";
@@ -26,7 +28,8 @@ export type JobSummary = {
   modelCode: string;
   make: string;
   status: RepairEvaluationStatus;
-  savedLifecycleKg: number;
+  /** Manufacturing CO₂e avoided (estimate) for this job under the active scenario. */
+  avoidedKg: number;
   deviceLabel: string | null;
   matchTier: string | null;
   failReason: string | null;
@@ -79,6 +82,8 @@ export type DashboardPayload = {
   attentionModels: AttentionModelRow[];
   charts: DashboardCharts;
   search: string;
+  replacementScenario: ReplacementScenario;
+  methodologyVersion: string;
 };
 
 export type JobReportPayload = {
@@ -93,6 +98,8 @@ export type JobReportPayload = {
   repairDescription: string;
   evaluationStatus: RepairEvaluationStatus;
   jobLabel: string;
+  methodologyVersion: string;
+  replacementScenario: ReplacementScenario;
   defect: {
     type: string | null;
     jobDescription: string | null;
@@ -111,9 +118,14 @@ export type JobReportPayload = {
     } | null;
   } | null;
   analysis: {
-    lifecycleBaseline: number;
+    manufacturingBaseline: number;
     partsCo2: number;
-    approxAvoidedLifecycle: number;
+    repairOperationalKg: number;
+    repairBurden: number;
+    avoidedKg: number;
+    replacementScenario: ReplacementScenario;
+    replacementProbabilityP: number;
+    methodologyVersion: string;
     lines: Array<{
       slot: number;
       sku: string;

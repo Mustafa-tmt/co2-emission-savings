@@ -50,7 +50,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="mt-auto border-t border-white/10 pt-6 text-xs leading-relaxed text-slate-500">
           <p className="px-2 font-medium uppercase tracking-wider text-slate-400">CO₂ insights</p>
-          <p className="mt-2 px-2">Repair vs replace — lifecycle estimates from your LCA tables.</p>
+          <p className="mt-2 px-2">
+            Repair vs replace — manufacturing-phase avoided CO₂e (probability-weighted) from your LCA tables.
+          </p>
         </div>
       </aside>
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { DashboardPayload, JobSummary } from "@/lib/dashboardTypes";
+import type { DashboardPayload, JobSummary, ReplacementScenario } from "@/lib/dashboardTypes";
 
 function statusStyles(status: JobSummary["status"]) {
   switch (status) {
@@ -19,16 +19,30 @@ function formatSavedKg(n: number) {
   return `${n.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg`;
 }
 
+function jobsIndexHref(opts: {
+  page: number;
+  search: string;
+  replacementScenario: ReplacementScenario;
+}) {
+  const p = new URLSearchParams();
+  const q = opts.search.trim();
+  if (q) p.set("q", q);
+  if (opts.page > 1) p.set("page", String(opts.page));
+  p.set("scenario", opts.replacementScenario);
+  return `/jobs?${p.toString()}`;
+}
+
 export function JobsSection({
   summaries,
   pagination,
   search,
+  replacementScenario,
 }: {
   summaries: JobSummary[];
   pagination: DashboardPayload["pagination"];
   search: string;
+  replacementScenario: ReplacementScenario;
 }) {
-  const qParam = search ? `&q=${encodeURIComponent(search)}` : "";
   const start = (pagination.page - 1) * pagination.pageSize + 1;
   const end = Math.min(pagination.page * pagination.pageSize, pagination.total);
 
@@ -45,6 +59,7 @@ export function JobsSection({
             <label htmlFor="job-search" className="sr-only">
               Search jobs
             </label>
+            <input type="hidden" name="scenario" value={replacementScenario} />
             <input
               id="job-search"
               name="q"
@@ -62,7 +77,7 @@ export function JobsSection({
             </button>
             {search ? (
               <Link
-                href="/jobs"
+                href={jobsIndexHref({ page: 1, search: "", replacementScenario })}
                 className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
               >
                 Clear
@@ -85,7 +100,7 @@ export function JobsSection({
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Device</th>
               <th className="px-4 py-3">Model (listed)</th>
-              <th className="px-4 py-3 text-right">Avoided CO₂e (est.)</th>
+              <th className="px-4 py-3 text-right">Manufacturing CO₂e avoided (est.)</th>
               <th className="px-4 py-3 sm:px-6 text-right">Report</th>
             </tr>
           </thead>
@@ -117,11 +132,11 @@ export function JobsSection({
                     {row.model || "—"}
                   </td>
                   <td className="px-4 py-3 text-right font-medium tabular-nums">
-                    {formatSavedKg(row.savedLifecycleKg)}
+                    {formatSavedKg(row.avoidedKg)}
                   </td>
                   <td className="px-4 py-3 text-right sm:px-6">
                     <Link
-                      href={`/jobs/${encodeURIComponent(row.jobId)}`}
+                      href={`/jobs/${encodeURIComponent(row.jobId)}?scenario=${encodeURIComponent(replacementScenario)}`}
                       className="font-medium text-[var(--brand)] hover:underline"
                     >
                       View
@@ -145,7 +160,11 @@ export function JobsSection({
           <div className="flex gap-2">
             {pagination.hasPrev ? (
               <Link
-                href={`/jobs?page=${pagination.page - 1}${qParam}`}
+                href={jobsIndexHref({
+                  page: pagination.page - 1,
+                  search,
+                  replacementScenario,
+                })}
                 className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-[var(--surface-muted)]"
               >
                 Previous
@@ -157,7 +176,11 @@ export function JobsSection({
             )}
             {pagination.hasNext ? (
               <Link
-                href={`/jobs?page=${pagination.page + 1}${qParam}`}
+                href={jobsIndexHref({
+                  page: pagination.page + 1,
+                  search,
+                  replacementScenario,
+                })}
                 className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-[var(--surface-muted)]"
               >
                 Next

@@ -126,8 +126,8 @@ function DefectTooltip({
     <div className="max-w-md rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-md">
       <p className="font-semibold leading-snug text-slate-900">{row.label}</p>
       <p className="mt-2 text-slate-700">
-        <span className="font-semibold text-slate-900">{kgLabel(row.savedKg)}</span> CO₂e avoided
-        (estimated)
+        <span className="font-semibold text-slate-900">{kgLabel(row.savedKg)}</span> manufacturing CO₂e
+        avoided (est.)
       </p>
       <p className="mt-1 text-slate-600">{row.jobCount} repair job{row.jobCount === 1 ? "" : "s"}</p>
     </div>
@@ -146,7 +146,7 @@ export function DashboardInsightCharts({ charts }: { charts: DashboardCharts }) 
     <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:items-stretch">
       <ChartShell
         title="How jobs land in the pipeline"
-        subtitle="One bar per outcome: repaired jobs with a savings estimate, failures, or excluded rows. Counts only — total avoided CO₂e is in the stat cards and device chart."
+        subtitle="One bar per outcome: repaired jobs with a manufacturing avoided estimate, failures, or excluded rows. Counts only — portfolio manufacturing CO₂e avoided is in the stat cards and device chart."
       >
         {pipeline.length === 0 ? (
           <EmptyChart message="No repair jobs loaded yet." />
@@ -205,8 +205,8 @@ export function DashboardInsightCharts({ charts }: { charts: DashboardCharts }) 
       </ChartShell>
 
       <ChartShell
-        title="Avoided CO₂e by repair category"
-        subtitle="Defect or service category from your job data (catalog text when available). Only jobs with a savings estimate (complete or partial) are included."
+        title="Manufacturing CO₂e avoided (est.) by repair category"
+        subtitle="Defect or service category from your job data (catalog text when available). Only jobs with an estimate (complete or partial) are included."
       >
         {defects.length === 0 ? (
           <EmptyChart message="No attributed savings yet. Once repaired jobs evaluate with an estimate, categories appear here." />
@@ -228,7 +228,7 @@ export function DashboardInsightCharts({ charts }: { charts: DashboardCharts }) 
                   tick={{ fontSize: 12, fill: "#475569", fontWeight: 500 }}
                   tickMargin={8}
                   label={{
-                    value: "kg CO₂e avoided (estimated)",
+                    value: "kg manufacturing CO₂e avoided (est.)",
                     position: "bottom",
                     offset: 4,
                     fill: "#334155",

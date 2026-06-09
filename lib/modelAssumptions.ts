@@ -1,25 +1,65 @@
 /**
- * High-level limitations & assumptions for the repair vs replace CO₂ model.
- * `lead` is emphasised in the web dialog; PDF uses “Lead: body”.
+ * Model assumptions (UI / PDF) and re-exports for methodology v2 parameters.
+ *
+ * Runtime constants and `calculateAvoidedCo2` live in `./co2Avoidance.js` so
+ * `lib/repairs.js` and Node scripts stay compatible without a TypeScript loader.
+ *
+ * ─── Replacement Probability Scenarios ───────────────────────────────────────
+ * P represents the probability that a repaired device genuinely displaced
+ * a new device purchase. Based on Prosman & Sacchi (2021) and EEA (2020).
+ *
+ * conservative: 0.70 — 30% rebound allowance (Zink et al. 2014, J. Industrial Ecology)
+ * central: 0.85 — Central estimate for Samsung premium segment
+ * optimistic: 1.00 — Upper bound — equivalent to prior implicit assumption
+ *
+ * ─── Repair Operational Overhead ─────────────────────────────────────────────
+ * Fixed CO₂e per job covering diagnostics, equipment energy, shop overhead.
+ * Based on TTR (2021) repair facility energy studies. Conservative placeholder
+ * pending measured operational data.
+ *
+ * ─── Methodology Version ─────────────────────────────────────────────────────
+ * v1 = full lifecycle baseline, no P, no operational overhead
+ * v2 = manufacturing-only baseline, P scenarios, operational overhead included
  */
+
+import {
+  REPLACEMENT_PROBABILITY,
+  DEFAULT_SCENARIO,
+  REPAIR_OPERATIONAL_KG_CO2E,
+  METHODOLOGY_VERSION,
+  normalizeReplacementScenario,
+  calculateAvoidedCo2,
+} from "./co2Avoidance.js";
+
+export type ReplacementScenario = "conservative" | "central" | "optimistic";
+
+export {
+  REPLACEMENT_PROBABILITY,
+  DEFAULT_SCENARIO,
+  REPAIR_OPERATIONAL_KG_CO2E,
+  METHODOLOGY_VERSION,
+  normalizeReplacementScenario,
+  calculateAvoidedCo2,
+};
+
 export type ModelAssumptionItem = { readonly lead: string; readonly body: string };
 
 export const MODEL_ASSUMPTION_ITEMS: readonly ModelAssumptionItem[] = [
   {
     lead: "Baseline",
-    body: 'Avoided CO₂ is estimated versus replacing the device with a new one (not “no repair” or a used-device alternative).',
+    body: 'Avoided manufacturing CO₂e is scaled by a replacement probability P (how often a repair displaces a new purchase). Scenarios: conservative P=0.70, central P=0.85, optimistic P=1.00. The physical baseline is the device manufacturing phase from your LCA table only — not distribution, use, or disposal.',
+  },
+  {
+    lead: "Repair burden",
+    body: `Mapped spare parts CO₂e plus a fixed operational allowance of ${REPAIR_OPERATIONAL_KG_CO2E} kg CO₂e per job (diagnostics, equipment, shop overhead — placeholder from facility energy literature, pending measured data).`,
   },
   {
     lead: "Scope",
-    body: "Uses your LCA device and part footprints (manufacturing-oriented). Repair logistics and shop-level impacts are excluded for now.",
+    body: "Uses your LCA device manufacturing column and component/part footprints. Formal repair-network logistics and full shop LCA are out of scope for now.",
   },
   {
     lead: "Multiple repairs",
     body: "Each repair is estimated on its own. Savings are not netted across repeated work on the same device.",
-  },
-  {
-    lead: "Repair time and energy",
-    body: "Not included in this phase. Planned once detailed operational monitoring is available.",
   },
   {
     lead: "Data matching",

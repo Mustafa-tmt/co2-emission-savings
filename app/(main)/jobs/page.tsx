@@ -2,21 +2,24 @@ import { TmtLogo } from "@/components/brand/TmtLogo";
 import { JobsSection } from "@/components/dashboard/JobsSection";
 import { MethodologyNote } from "@/components/dashboard/MethodologyNote";
 import { ModelAssumptionsDialog } from "@/components/dashboard/ModelAssumptionsDialog";
+import { ReplacementScenarioControls } from "@/components/dashboard/ReplacementScenarioControls";
 import { getDashboardDataCached } from "@/lib/dashboardCache";
 import type { DashboardPayload } from "@/lib/dashboardTypes";
+import { normalizeReplacementScenario } from "@/lib/modelAssumptions";
 
 export const dynamic = "force-dynamic";
 
 export default async function JobsListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string; scenario?: string }>;
 }) {
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q : "";
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  const scenario = normalizeReplacementScenario(sp.scenario);
 
-  const raw = await getDashboardDataCached(q, page);
+  const raw = await getDashboardDataCached(q, page, scenario);
   const data = raw as DashboardPayload;
 
   return (
@@ -45,7 +48,19 @@ export default async function JobsListPage({
         </div>
       </header>
 
-      <JobsSection summaries={data.summaries} pagination={data.pagination} search={data.search} />
+      <ReplacementScenarioControls
+        current={data.replacementScenario}
+        pathname="/jobs"
+        searchQuery={data.search}
+        page={data.pagination.page}
+      />
+
+      <JobsSection
+        summaries={data.summaries}
+        pagination={data.pagination}
+        search={data.search}
+        replacementScenario={data.replacementScenario}
+      />
 
       <MethodologyNote />
     </div>

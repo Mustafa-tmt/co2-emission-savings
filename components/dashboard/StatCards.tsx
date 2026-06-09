@@ -1,17 +1,24 @@
 import { AttentionNeededStatCard } from "@/components/dashboard/AttentionModelsDialog";
-import type { AttentionModelRow, DashboardPayload } from "@/lib/dashboardTypes";
+import type { AttentionModelRow, DashboardPayload, ReplacementScenario } from "@/lib/dashboardTypes";
 
 function formatKg(n: number) {
   if (!Number.isFinite(n)) return "—";
   return `${n.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 0 })} kg`;
 }
 
+const scenarioHint = (s: ReplacementScenario) => {
+  const pct = s === "conservative" ? "70%" : s === "central" ? "85%" : "100%";
+  return `Portfolio sum for ok + partial · scenario ${s} (P=${pct}), manufacturing phase baseline`;
+};
+
 export function StatCards({
   totals,
   attentionModels,
+  replacementScenario,
 }: {
   totals: DashboardPayload["totals"];
   attentionModels: AttentionModelRow[];
+  replacementScenario: ReplacementScenario;
 }) {
   const cards = [
     {
@@ -21,9 +28,9 @@ export function StatCards({
       accent: "from-[var(--brand)]/15 to-transparent",
     },
     {
-      label: "CO₂e avoided (lifecycle)",
+      label: "Manufacturing CO₂e avoided (est.)",
       value: formatKg(totals.totalSavedKg),
-      hint: "Sum for ok + partial evaluations",
+      hint: scenarioHint(replacementScenario),
       accent: "from-emerald-500/15 to-transparent",
     },
     {

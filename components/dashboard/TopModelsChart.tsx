@@ -77,7 +77,8 @@ function ChartTooltip({
     <div className="max-w-md rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm shadow-md">
       <p className="font-semibold leading-snug text-slate-900">{p.fullName}</p>
       <p className="mt-2 text-slate-700">
-        <span className="font-semibold text-slate-900">{p.savedKg}</span> kg CO₂e avoided (estimated)
+        <span className="font-semibold text-slate-900">{p.savedKg}</span> kg manufacturing CO₂e avoided
+        (est.)
       </p>
       <p className="mt-1 text-slate-600">{p.jobs} jobs in this device group</p>
     </div>
@@ -88,7 +89,7 @@ export function TopModelsChart({ topModels }: { topModels: TopModelRow[] }) {
   if (!topModels.length) {
     return (
       <div className="flex min-h-[280px] items-center justify-center rounded-2xl border border-dashed border-[var(--border)] text-sm font-medium text-[var(--foreground)]">
-        No device-level savings to chart yet.
+        No device-level manufacturing avoided CO₂e to chart yet.
       </div>
     );
   }
@@ -105,11 +106,11 @@ export function TopModelsChart({ topModels }: { topModels: TopModelRow[] }) {
     <div className="w-full overflow-visible rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-[0_8px_32px_-12px_rgba(12,18,34,0.1)]">
       <div className="border-b border-[var(--border)] bg-gradient-to-r from-[var(--brand)]/10 to-transparent px-5 py-4 sm:px-6">
         <h2 className="text-base font-semibold tracking-tight text-[var(--foreground)] sm:text-lg">
-          Top devices by estimated avoided CO₂e
+          Top devices by estimated manufacturing CO₂e avoided
         </h2>
         <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">
           Each row is one device group (matched LCA device or listed model). Horizontal axis is estimated
-          avoided CO₂e in kilograms. Hover a bar for the full device name and job count.
+          manufacturing CO₂e avoided in kilograms. Hover a bar for the full device name and job count.
         </p>
       </div>
       <div className="min-h-0 w-full min-w-0 px-2 pb-4 pt-3 sm:px-4" style={{ height: chartHeight }}>
@@ -129,7 +130,7 @@ export function TopModelsChart({ topModels }: { topModels: TopModelRow[] }) {
               tick={{ fontSize: 13, fill: "#0f172a", fontWeight: 500 }}
               tickMargin={8}
               label={{
-                value: "Kilograms CO₂e (estimated)",
+                value: "Kilograms manufacturing CO₂e avoided (est.)",
                 position: "bottom",
                 offset: 4,
                 fill: "#334155",

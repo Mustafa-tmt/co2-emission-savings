@@ -5,14 +5,22 @@ import { ModelAssumptionsDialog } from "@/components/dashboard/ModelAssumptionsD
 import { DashboardInsightCharts } from "@/components/dashboard/DashboardInsightCharts";
 import { StatCards } from "@/components/dashboard/StatCards";
 import { TopModelsChart } from "@/components/dashboard/TopModelsChart";
+import { ReplacementScenarioControls } from "@/components/dashboard/ReplacementScenarioControls";
 import { getDashboardDataCached } from "@/lib/dashboardCache";
 import type { DashboardPayload } from "@/lib/dashboardTypes";
+import { normalizeReplacementScenario } from "@/lib/modelAssumptions";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function OverviewPage() {
-  const raw = await getDashboardDataCached("", 1);
+export default async function OverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ scenario?: string }>;
+}) {
+  const sp = await searchParams;
+  const scenario = normalizeReplacementScenario(sp.scenario);
+  const raw = await getDashboardDataCached("", 1, scenario);
   const data = raw as DashboardPayload;
 
   return (
@@ -27,10 +35,10 @@ export default async function OverviewPage() {
               CO₂ savings overview
             </h1>
             <p className="max-w-2xl text-base leading-relaxed text-[var(--muted)]">
-              Estimated avoided CO₂e when devices are repaired instead of replaced, using your device
-              and component lifecycle data. Open{" "}
+              Estimated manufacturing CO₂e avoided when repairs displace new devices (probability-weighted),
+              using your device manufacturing column and component data. Open{" "}
               <Link
-                href="/jobs"
+                href={`/jobs?scenario=${encodeURIComponent(data.replacementScenario)}`}
                 className="font-medium text-[var(--brand)] underline-offset-2 hover:underline"
               >
                 Repair jobs
@@ -48,7 +56,13 @@ export default async function OverviewPage() {
         </div>
       </header>
 
-      <StatCards totals={data.totals} attentionModels={data.attentionModels} />
+      <ReplacementScenarioControls current={data.replacementScenario} pathname="/overview" />
+
+      <StatCards
+        totals={data.totals}
+        attentionModels={data.attentionModels}
+        replacementScenario={data.replacementScenario}
+      />
       <EquivalentsStrip equivalents={data.equivalents} />
 
       <section className="space-y-6" aria-label="Charts">

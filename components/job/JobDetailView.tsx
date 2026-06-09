@@ -21,7 +21,8 @@ export async function JobDetailView({
   reportPublicUrl: string;
   variant?: "app" | "public";
 }) {
-  const pdfHref = `/api/reports/${encodeURIComponent(report.jobId)}/pdf`;
+  const scenario = report.replacementScenario ?? "central";
+  const pdfHref = `/api/reports/${encodeURIComponent(report.jobId)}/pdf?scenario=${encodeURIComponent(scenario)}`;
   const skippedOrFailed = report.evaluationStatus === "skipped" || report.evaluationStatus === "failed";
   const isPublic = variant === "public";
 
@@ -55,11 +56,17 @@ export async function JobDetailView({
           className={`flex flex-wrap items-center justify-between gap-4 ${isPublic ? "no-print" : ""}`}
         >
           {isPublic ? (
-            <Link href="/overview" className="text-sm font-medium text-[var(--brand)] hover:underline">
+            <Link
+              href={`/overview?scenario=${encodeURIComponent(report.replacementScenario ?? "central")}`}
+              className="text-sm font-medium text-[var(--brand)] hover:underline"
+            >
               Full dashboard
             </Link>
           ) : (
-            <Link href="/jobs" className="text-sm font-medium text-[var(--brand)] hover:underline">
+            <Link
+              href={`/jobs?scenario=${encodeURIComponent(report.replacementScenario ?? "central")}`}
+              className="text-sm font-medium text-[var(--brand)] hover:underline"
+            >
               ← Back to jobs
             </Link>
           )}
@@ -160,19 +167,36 @@ export async function JobDetailView({
               {report.analysis ? (
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
                   <h2 className="text-sm font-semibold text-[var(--foreground)]">CO₂e summary</h2>
+                  <p className="mt-2 text-xs text-[var(--muted)]">
+                    Scenario {report.analysis.replacementScenario} · P ={" "}
+                    {report.analysis.replacementProbabilityP.toFixed(2)} · methodology{" "}
+                    {report.analysis.methodologyVersion}
+                  </p>
                   <ul className="mt-3 space-y-2 text-sm">
                     <li className="flex justify-between gap-4 border-b border-[var(--border)] py-2">
-                      <span className="text-[var(--muted)]">New device — full lifecycle (reference)</span>
-                      <span className="tabular-nums font-medium">{formatKg(report.analysis.lifecycleBaseline)}</span>
+                      <span className="text-[var(--muted)]">New device — manufacturing phase baseline</span>
+                      <span className="tabular-nums font-medium">
+                        {formatKg(report.analysis.manufacturingBaseline)}
+                      </span>
                     </li>
                     <li className="flex justify-between gap-4 border-b border-[var(--border)] py-2">
                       <span className="text-[var(--muted)]">This repair — parts (mapped)</span>
                       <span className="tabular-nums font-medium">{formatKg(report.analysis.partsCo2)}</span>
                     </li>
+                    <li className="flex justify-between gap-4 border-b border-[var(--border)] py-2">
+                      <span className="text-[var(--muted)]">Operational allowance (this job)</span>
+                      <span className="tabular-nums font-medium">
+                        {formatKg(report.analysis.repairOperationalKg)}
+                      </span>
+                    </li>
+                    <li className="flex justify-between gap-4 border-b border-[var(--border)] py-2">
+                      <span className="text-[var(--muted)]">Repair burden (parts + operational)</span>
+                      <span className="tabular-nums font-medium">{formatKg(report.analysis.repairBurden)}</span>
+                    </li>
                     <li className="flex justify-between gap-4 py-2">
-                      <span className="text-[var(--foreground)]">Avoided vs full lifecycle (estimate)</span>
+                      <span className="text-[var(--foreground)]">Manufacturing CO₂e avoided (est.)</span>
                       <span className="tabular-nums font-semibold text-[var(--brand-dark)]">
-                        {formatKg(report.analysis.approxAvoidedLifecycle)}
+                        {formatKg(report.analysis.avoidedKg)}
                       </span>
                     </li>
                   </ul>
